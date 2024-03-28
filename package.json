@@ -1,0 +1,19 @@
+{
+  "name": "fluma",
+  "version": "1.0.0",
+  "description": "A web framework that tries to make full-stack dev a joy again",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "web",
+    "framework",
+    "client",
+    "server",
+    "templating",
+    "rpc"
+  ],
+  "author": "DarkSystem",
+  "license": "MIT"
+}
