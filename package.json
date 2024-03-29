@@ -14,6 +14,11 @@
     "templating",
     "rpc"
   ],
+  "type": "module",
   "author": "DarkSystem",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^24.0.0",
+    "w3c-xmlserializer": "^5.0.0"
+  }
 }

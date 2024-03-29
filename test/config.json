@@ -1,0 +1,9 @@
+{
+    "name":"testComponents",
+    "author":"DarkSystem",
+    "components":{
+        "hallo":{"template":"components/hallo","properties":["name"]},
+        "text":{"template":"components/text","properties":[]}
+    }
+   
+}
