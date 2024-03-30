@@ -10,7 +10,7 @@ var componentList = JSON.parse(fs.readFileSync(path.join(process.cwd(), path.dir
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]))
 Object.keys(componentList).forEach(async (compName) => {
     await importComp(compName)
-    if(Object.keys(components).sort()==Object.keys(componentList).sort())console.log(components.hallo('Bob', ''))
+    if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join())console.log(components.hallo('Bob', ''))
 });
 function xmlString() {
     return xmlStringImp(...arguments).replaceAll('<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>', '').replaceAll('</body></html>', '').replaceAll(' xmlns="http://www.w3.org/1999/xhtml"', '')
