@@ -7,14 +7,15 @@ import xmlStringImp from 'w3c-xmlserializer'
 var file = new jsdom.JSDOM(fs.readFileSync(path.join(process.cwd(), process.argv[2])))
 var document="";
 var components = {}
-var componentList = JSON.parse(fs.readFileSync(path.join(process.cwd(), path.dirname(process.argv[2]), 'config.json'))).components
+var config=JSON.parse(fs.readFileSync(path.join(process.cwd(), path.dirname(process.argv[2]), 'config.json')))
+var componentList = config.components
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]))
 
 Object.keys(componentList).forEach(async (compName) => {
     await importComp(compName)
     if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join()){
         Object.values(components).forEach(async (comp,i)=>{
-            document += await prettier.format(comp.toString(),{
+            document += "export "+await prettier.format(comp.toString(),{
                 "arrowParens": "always",
                 "bracketSameLine": false,
                 "bracketSpacing": true,
@@ -37,7 +38,7 @@ Object.keys(componentList).forEach(async (compName) => {
                 "parser":"babel"
               })
               if(Object.values(components).length-1==i){
-                console.log(document)
+                fs.writeFileSync(path.join(basePath,`${config.name}.js`),document)
               }
         })
     }
