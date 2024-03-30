@@ -12,11 +12,14 @@ Object.keys(componentList).forEach(async (compName) => {
     await importComp(compName)
     if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join()){
         console.log(components.hallo('Bob', ''))
-        console.log(components.hallo.toString())
+        console.log(components.hallo.name)
     }
 });
 function xmlString() {
     return xmlStringImp(...arguments).replaceAll('<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>', '').replaceAll('</body></html>', '').replaceAll(' xmlns="http://www.w3.org/1999/xhtml"', '')
+}
+function genNamedFunc(name,func){
+    return (new Function(`return function ${name}(){return (${func.toString()})(...arguments)}`))()
 }
 async function importComp(compName) {
     //console.log(compName)
@@ -55,7 +58,7 @@ function generateComponent(template, script, properties, name) {
                 if (includes.length-1 == i) {
                     func = new Function(...properties, `var args=Array.from(arguments).slice(0,-2);return (${script.toString()})(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1])`)
                     
-                    res(func)
+                    res(genNamedFunc(name,func))
                 }
             })
         })
@@ -63,7 +66,7 @@ function generateComponent(template, script, properties, name) {
 
         if (includes.length == 0) {
             func = new Function(...properties, `var args=Array.from(arguments).slice(0,-1);return (${script.toString()})(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1])`)
-            res(func)
+            res(genNamedFunc(name,func))
         }
         //console.log()
 
