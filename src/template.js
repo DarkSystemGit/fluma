@@ -2,17 +2,44 @@ import * as fs from 'fs'
 import * as jsdom from 'jsdom'
 import * as path from 'path'
 import * as process from 'process'
+import * as prettier from "prettier";
 import xmlStringImp from 'w3c-xmlserializer'
 var file = new jsdom.JSDOM(fs.readFileSync(path.join(process.cwd(), process.argv[2])))
-var document = file.window.document
+var document="";
 var components = {}
 var componentList = JSON.parse(fs.readFileSync(path.join(process.cwd(), path.dirname(process.argv[2]), 'config.json'))).components
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]))
+
 Object.keys(componentList).forEach(async (compName) => {
     await importComp(compName)
     if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join()){
-        console.log(components.hallo('Bob', ''))
-        console.log(components.hallo.name)
+        Object.values(components).forEach(async (comp,i)=>{
+            document += await prettier.format(comp.toString(),{
+                "arrowParens": "always",
+                "bracketSameLine": false,
+                "bracketSpacing": true,
+                "semi": true,
+                "experimentalTernaries": false,
+                "singleQuote": false,
+                "jsxSingleQuote": false,
+                "quoteProps": "as-needed",
+                "trailingComma": "all",
+                "singleAttributePerLine": false,
+                "htmlWhitespaceSensitivity": "css",
+                "vueIndentScriptAndStyle": false,
+                "proseWrap": "preserve",
+                "insertPragma": false,
+                "printWidth": 80,
+                "requirePragma": false,
+                "tabWidth": 2,
+                "useTabs": false,
+                "embeddedLanguageFormatting": "auto",
+                "parser":"babel"
+              })
+              if(Object.values(components).length-1==i){
+                console.log(document)
+              }
+        })
     }
 });
 function xmlString() {
