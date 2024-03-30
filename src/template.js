@@ -10,7 +10,10 @@ var componentList = JSON.parse(fs.readFileSync(path.join(process.cwd(), path.dir
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]))
 Object.keys(componentList).forEach(async (compName) => {
     await importComp(compName)
-    if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join())console.log(components.hallo('Bob', ''))
+    if(Object.keys(components).sort().join()==Object.keys(componentList).sort().join()){
+        console.log(components.hallo('Bob', ''))
+        console.log(components.hallo.toString())
+    }
 });
 function xmlString() {
     return xmlStringImp(...arguments).replaceAll('<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>', '').replaceAll('</body></html>', '').replaceAll(' xmlns="http://www.w3.org/1999/xhtml"', '')
@@ -50,20 +53,17 @@ function generateComponent(template, script, properties, name) {
                 template = template.replaceAll(xmlString(node), components[tag](...Object.values(node.attributes), children))
                 //console.log(includes.length)
                 if (includes.length-1 == i) {
-                    func = new Function(...properties, `var args=Array.from(arguments).slice(0,-2);return arguments[arguments.length-1](${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-2])`)
-                    res(function () {
-                        return func(...arguments, script)
-                    })
+                    func = new Function(...properties, `var args=Array.from(arguments).slice(0,-2);return (${script.toString()})(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1])`)
+                    
+                    res(func)
                 }
             })
         })
 
 
         if (includes.length == 0) {
-            func = new Function(...properties, `var args=Array.from(arguments).slice(0,-2);return arguments[arguments.length-1](${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-2])`)
-            res(function () {
-                return func(...arguments, script)
-            })
+            func = new Function(...properties, `var args=Array.from(arguments).slice(0,-1);return (${script.toString()})(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1])`)
+            res(func)
         }
         //console.log()
 
