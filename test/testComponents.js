@@ -24,7 +24,7 @@ export function hallo() {
       container,
     ).replaceAll("$[children]", arguments[arguments.length - 1]);
     container.innerHTML = component;
-    document.getElementByTagName("body")[0].appendChild(container);
+    document.getElementsByTagName("body")[0].appendChild(container);
     return container;
   })(...arguments);
 }
