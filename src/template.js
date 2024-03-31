@@ -86,9 +86,8 @@ async function importComp(compName) {
   //console.log(compName)
   var script;
   if (componentList[compName].script)
-    script = await import(
-      path.join(basePath, componentList[compName].script + ".js")
-    );
+    script = path.relative(path.join(basePath, componentList[compName].script + ".js"),basePath)
+    
   components[compName] = await generateComponent(
     fs
       .readFileSync(
