@@ -18,10 +18,7 @@ export function hallo() {
     var component = ((args, template) => {
       return template;
     })
-      .bind(container)(
-        { name: args[0] },
-        `${text(`Hallo, ${name}`).childNodes[0].outerHTML}`,
-      )
+      .bind(container)({ name: args[0] }, `${text(`Hallo, ${name}`).outerHTML}`)
       .replaceAll("$[children]", arguments[arguments.length - 1]);
     container.innerHTML = component;
     return container;
