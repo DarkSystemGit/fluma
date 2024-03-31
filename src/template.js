@@ -136,7 +136,7 @@ function generateComponent(template, script, properties, name) {
                 //console.log(xmlString(node),components[tag](Object.values(node.attributes), children),template.replaceAll(xmlString(node),components[tag](Object.values(node.attributes), children)))
                 template = template.replaceAll(
                     xmlString(node),
-                    `\${${tag}(${attrs}\`${children}\`).childNodes[0].outerHTML}`,
+                    `\${${tag}(${attrs}\`${children}\`).outerHTML}`,
                 );
                 //console.log(includes.length)
                 if (includes.length - 1 == i) {
