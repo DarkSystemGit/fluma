@@ -121,7 +121,7 @@ function generateComponent(template, script, properties, name) {
         var tempDom = dom.window.document;
         var func;
         if (!script)
-            script = (args, template) => {
+            script = (args, template,component) => {
                 return template;
             };
         includes.forEach((tag, i) => {
@@ -142,7 +142,7 @@ function generateComponent(template, script, properties, name) {
                 if (includes.length - 1 == i) {
                     func = new Function(
                         ...properties,
-                        `var args=Array.from(arguments).slice(0,-2);var container=document.createElement('div');var component=((${script.toString()}).bind(container))(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;return container`,
+                        `var args=Array.from(arguments).slice(0,-2);var container=document.createElement('div');var component=(${script.toString()})(${propObj},\`${template}\`,container).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;return container`,
                     );
 
                     res(genNamedFunc(name, func));
@@ -153,7 +153,7 @@ function generateComponent(template, script, properties, name) {
         if (includes.length == 0) {
             func = new Function(
                 ...properties,
-                `var args=Array.from(arguments).slice(0,-1);var container=document.createElement('div');var component=((${script.toString()}).bind(container))(${propObj},\`${template}\`).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;return container`,
+                `var args=Array.from(arguments).slice(0,-2);var container=document.createElement('div');var component=(${script.toString()})(${propObj},\`${template}\`,container).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;return container`,
             );
             res(genNamedFunc(name, func));
         }
