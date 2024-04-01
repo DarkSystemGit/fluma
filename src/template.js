@@ -7,7 +7,30 @@ import xmlStringImp from "w3c-xmlserializer";
 var file = new jsdom.JSDOM(
   fs.readFileSync(path.join(process.cwd(), process.argv[2])),
 );
+var prettierOptions = {
+  arrowParens: "always",
+  bracketSameLine: false,
+  bracketSpacing: true,
+  semi: true,
+  experimentalTernaries: false,
+  singleQuote: false,
+  jsxSingleQuote: false,
+  quoteProps: "as-needed",
+  trailingComma: "all",
+  singleAttributePerLine: false,
+  htmlWhitespaceSensitivity: "css",
+  vueIndentScriptAndStyle: false,
+  proseWrap: "preserve",
+  insertPragma: false,
+  printWidth: 80,
+  requirePragma: false,
+  tabWidth: 2,
+  useTabs: false,
+  embeddedLanguageFormatting: "auto",
+  parser: "babel",
+}
 var document = [];
+var imports = []
 var components = {};
 var config = JSON.parse(
   fs.readFileSync(
@@ -16,7 +39,12 @@ var config = JSON.parse(
 );
 var componentList = config.components;
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]));
-
+function uniq(a) {
+  var seen = {};
+  return a.filter(function (item) {
+    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+  });
+}
 Object.keys(componentList).forEach(async (compName) => {
   await importComp(compName);
   if (
@@ -26,39 +54,22 @@ Object.keys(componentList).forEach(async (compName) => {
     Object.values(components).forEach(async (comp, i) => {
       document.push(
         "export " +
-          (await prettier.format(comp.toString(), {
-            arrowParens: "always",
-            bracketSameLine: false,
-            bracketSpacing: true,
-            semi: true,
-            experimentalTernaries: false,
-            singleQuote: false,
-            jsxSingleQuote: false,
-            quoteProps: "as-needed",
-            trailingComma: "all",
-            singleAttributePerLine: false,
-            htmlWhitespaceSensitivity: "css",
-            vueIndentScriptAndStyle: false,
-            proseWrap: "preserve",
-            insertPragma: false,
-            printWidth: 80,
-            requirePragma: false,
-            tabWidth: 2,
-            useTabs: false,
-            embeddedLanguageFormatting: "auto",
-            parser: "babel",
-          })),
+        (await prettier.format(comp.toString(), prettierOptions)),
       );
       if (Object.values(components).length - 1 == i) {
         var end;
-        setInterval(() => {
+        setInterval(async () => {
           if (
             document.length == Object.values(components).length &&
             end != true
           ) {
+
             fs.writeFileSync(
               path.join(basePath, `${config.name}.js`),
-              document.join(""),
+              await prettier.format(
+                uniq(imports).map((imp) => {
+                  return `import ${imp.name}Script from '${imp.path}';`
+                }).join(";") + document.join(""), prettierOptions)
             );
             end = true;
             process.exit();
@@ -86,8 +97,8 @@ async function importComp(compName) {
   //console.log(compName)
   var script;
   if (componentList[compName].script)
-    script = path.relative(path.join(basePath, componentList[compName].script + ".js"),basePath)
-    
+    script = './'+path.relative( basePath,path.join(basePath, componentList[compName].script + ".js"))
+  //console.log(script,path.join(basePath, componentList[compName].script + ".js"), basePath)
   components[compName] = await generateComponent(
     fs
       .readFileSync(
@@ -106,11 +117,11 @@ function generateComponent(template, script, properties, name) {
     var propObj = "{";
     var includes = [];
     var fin = 0;
-    var pageInsert=''
-    if(componentList[name].page){pageInsert='document.getElementsByTagName("body")[0].appendChild(container);'}
+    var pageInsert = ''
+    var props=''
+    if (componentList[name].page) { pageInsert = 'document.getElementsByTagName("body")[0].appendChild(container);' }
     properties.forEach((prop, i) => {
-      reps += `.replaceAll('\${${prop}}',${prop})`;
-      propObj += `'${prop}':args[${i}]`;
+      props += `var ${prop}=props.${prop};`;
     });
     propObj += "}";
     template.split(";").forEach(async (imp, i) => {
@@ -123,29 +134,33 @@ function generateComponent(template, script, properties, name) {
     var dom = new jsdom.JSDOM(template);
     var tempDom = dom.window.document;
     var func;
-    if (!script)
-      script = (args, template, component) => {
-        return template;
-      };
+    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(\`__tempFill__\`,props,container);props=cusExec.props;component=cusExec.template;`; } else { script = '' }
+    
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
         await importComp(tag);
         var children = "";
-        var attrs = Object.values(node.attributes).join() + ",";
-        if (Object.values(node.attributes).join("") == "") attrs = "";
+        
+        var attrs = ''
+        if (node.hasAttributes){
+          for(var attr of node.attributes)attrs+=`${attr.name}:'${attr.value}',`
+          attrs=','+attrs.slice(0,-1)
+        }
+        //console.log(attrs)
         Array.from(node.childNodes).forEach((child) => {
           children += xmlString(child);
         });
         //console.log(xmlString(node),components[tag](Object.values(node.attributes), children),template.replaceAll(xmlString(node),components[tag](Object.values(node.attributes), children)))
         template = template.replaceAll(
           xmlString(node),
-          `\${${tag}(${attrs}\`${children}\`).outerHTML}`,
+          `\${${tag}({children:\`${children}\`${attrs}}).outerHTML}`,
         );
-        //console.log(includes.length)
+        //console.log(script)
         if (includes.length - 1 == i) {
+
           func = new Function(
-            ...properties,
-            `var args=Array.from(arguments).slice(0,-2);var container=document.createElement('div');var component=(${script.toString()})(${propObj},\`${template}\`,container).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;${pageInsert}return container`,
+            
+            `var props=arguments[0];var container=document.createElement('div');var component;${props}${script.replace('__tempFill__',template)}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML=component;${pageInsert}return container`,
           );
 
           res(genNamedFunc(name, func));
@@ -155,8 +170,8 @@ function generateComponent(template, script, properties, name) {
 
     if (includes.length == 0) {
       func = new Function(
-        ...properties,
-        `var args=Array.from(arguments).slice(0,-2);var container=document.createElement('div');var component=(${script.toString()})(${propObj},\`${template}\`,container).replaceAll('$[children]',arguments[arguments.length-1]);container.innerHTML=component;${pageInsert}return container`,
+        
+        `var container=document.createElement('div');var component;${props}${script.replace('__tempFill__',template)};component=\`${template}\`.replaceAll('$[children]',arguments[0].children);container.innerHTML=component;${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }

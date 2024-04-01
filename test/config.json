@@ -2,7 +2,7 @@
     "name":"testComponents",
     "author":"DarkSystem",
     "components":{
-        "hallo":{"template":"components/hallo","properties":["name"],"page":true},
+        "hallo":{"template":"components/hallo","script":"components/hallo","properties":["name"],"page":true},
         "text":{"template":"components/text","properties":[]}
     }
    

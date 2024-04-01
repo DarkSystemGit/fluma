@@ -1,28 +1,34 @@
+import halloScript from "./components/hallo.js";
 export function text() {
   return (function anonymous() {
-    var args = Array.from(arguments).slice(0, -2);
     var container = document.createElement("div");
-    var component = ((args, template, component) => {
-      return template;
-    })({}, `<p>$[children]</p>`, container).replaceAll(
+    var component;
+    component = `<p>$[children]</p>`.replaceAll(
       "$[children]",
-      arguments[arguments.length - 1],
+      arguments[0].children,
     );
     container.innerHTML = component;
     return container;
   })(...arguments);
 }
 export function hallo() {
-  return (function anonymous(name) {
-    var args = Array.from(arguments).slice(0, -2);
+  return (function anonymous() {
+    var props = arguments[0];
     var container = document.createElement("div");
-    var component = ((args, template, component) => {
-      return template;
-    })(
-      { name: args[0] },
-      `${text(`Hallo, ${name}`).outerHTML}`,
+    var component;
+    var name = props.name;
+    var cusExec = halloScript(
+      `${text({ children: `Hallo, ${name}` }).outerHTML}`,
+      props,
       container,
-    ).replaceAll("$[children]", arguments[arguments.length - 1]);
+    );
+    props = cusExec.props;
+    component = cusExec.template;
+    var name = props.name;
+    component = `${text({ children: `Hallo, ${name}` }).outerHTML}`.replaceAll(
+      "$[children]",
+      props.children,
+    );
     container.innerHTML = component;
     document.getElementsByTagName("body")[0].appendChild(container);
     return container;
