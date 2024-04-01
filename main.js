@@ -1,5 +1,4 @@
-import * as temp from 'src/template'
-import { Client } from './src/client' 
-import { Server } from './src/server' 
-export var client= Client
-export var server= Server
+import { client } from './src/client.js' 
+import { server } from './src/server.js' 
+export var Client= client
+export var Server= server

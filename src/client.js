@@ -54,9 +54,9 @@ async function response(id) {
         }, 100)
     })
 }
-export class Client {
-    constructor (url) {
-        url=new URL(url)
+export class client {
+    constructor () {
+        url=new URL(window.location)
         var tls=false
         if(url.protocol=="wss:")tls=true
         return new Promise(async (resolve, reject) => {

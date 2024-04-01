@@ -1,4 +1,4 @@
-import {text} from './../testComponents.js'
+import {text} from '../testComponents.js'
 export default function (template,props,component){
     props.name='Joe'
     component.appendChild(text({children:'Dynamic Bit!'}))

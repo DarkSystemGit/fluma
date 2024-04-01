@@ -1,9 +1,12 @@
-import { Server as WebSocket } from 'ws'
-export class Server{
-    constructor(port,functions){
+import { WebSocket } from 'ws'
+export class server{
+    constructor(httpServer,functions){
         //console.log(handlers)
         this.handlers=functions
-        new WebSocket({port}).on('connection',ws=>{
+        this.handlers._lstRPC=()=>{
+            return Object.keys(this.handlers)
+        }
+        new WebSocket({httpServer}).on('connection',ws=>{
             ws.on('message',msg=>{
                 //console.log(this)
                 msg=JSON.parse(msg)
