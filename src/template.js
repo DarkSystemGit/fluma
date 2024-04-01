@@ -4,6 +4,7 @@ import * as path from "path";
 import * as process from "process";
 import * as prettier from "prettier";
 import xmlStringImp from "w3c-xmlserializer";
+import { minify } from "terser";
 var file = new jsdom.JSDOM(
   fs.readFileSync(path.join(process.cwd(), process.argv[2])),
 );
@@ -63,13 +64,17 @@ Object.keys(componentList).forEach(async (compName) => {
             document.length == Object.values(components).length &&
             end != true
           ) {
-
+            var file=await prettier.format(
+              uniq(imports).map((imp) => {
+                return `import ${imp.name}Script from '${imp.path}';`
+              }).join(";") + document.join(""), prettierOptions)
             fs.writeFileSync(
               path.join(basePath, `${config.name}.js`),
-              await prettier.format(
-                uniq(imports).map((imp) => {
-                  return `import ${imp.name}Script from '${imp.path}';`
-                }).join(";") + document.join(""), prettierOptions)
+              file
+            );
+            fs.writeFileSync(
+              path.join(basePath, `${config.name}.min.js`),
+              (await minify(file)).code
             );
             end = true;
             process.exit();
@@ -119,6 +124,9 @@ function generateComponent(template, script, properties, name) {
     var fin = 0;
     var pageInsert = ''
     var props=''
+    var basicProps=''
+    var bP=['id','name','class']
+    bP.forEach((propName)=>{basicProps+=`if(!(props.${propName}&&${properties.hasOwnProperty(propName)})){container.${propName}=props.${propName}}`})
     if (componentList[name].page) { pageInsert = 'document.getElementsByTagName("body")[0].appendChild(container);' }
     properties.forEach((prop, i) => {
       props += `var ${prop}=props.${prop};`;
@@ -134,7 +142,7 @@ function generateComponent(template, script, properties, name) {
     var dom = new jsdom.JSDOM(template);
     var tempDom = dom.window.document;
     var func;
-    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(\`__tempFill__\`,props,container);props=cusExec.props;component=cusExec.template;`; } else { script = '' }
+    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(\`__tempFill__\`,props,container);props=cusExec.props;component=cusExec.template;container=cusExec.component;`; } else { script = '' }
     
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
@@ -160,7 +168,7 @@ function generateComponent(template, script, properties, name) {
 
           func = new Function(
             
-            `var props=arguments[0];var container=document.createElement('div');var component;${props}${script.replace('__tempFill__',template)}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML=component;${pageInsert}return container`,
+            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script.replace('__tempFill__',template)}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
           );
 
           res(genNamedFunc(name, func));
@@ -171,7 +179,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
         
-        `var container=document.createElement('div');var component;${props}${script.replace('__tempFill__',template)};component=\`${template}\`.replaceAll('$[children]',arguments[0].children);container.innerHTML=component;${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script.replace('__tempFill__',template)};component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }
