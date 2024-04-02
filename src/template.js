@@ -64,7 +64,7 @@ Object.keys(componentList).forEach(async (compName) => {
             document.length == Object.values(components).length &&
             end != true
           ) {
-            var file=await prettier.format(
+            var file = await prettier.format(
               uniq(imports).map((imp) => {
                 return `import ${imp.name}Script from '${imp.path}';`
               }).join(";") + document.join(""), prettierOptions)
@@ -93,10 +93,10 @@ function xmlString() {
     .replaceAll("</body></html>", "")
     .replaceAll(' xmlns="http://www.w3.org/1999/xhtml"', "");
 }
-function hash(elm){
+function hash(elm) {
   return btoa(elm.split('').reduce((hash, char) => {
     return char.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
-}, 0).toString());
+  }, 0).toString());
 }
 function genNamedFunc(name, func) {
   return new Function(
@@ -107,7 +107,7 @@ async function importComp(compName) {
   //console.log(compName)
   var script;
   if (componentList[compName].script)
-    script = './'+path.relative( basePath,path.join(basePath, componentList[compName].script + ".js"))
+    script = './' + path.relative(basePath, path.join(basePath, componentList[compName].script + ".js"))
   //console.log(script,path.join(basePath, componentList[compName].script + ".js"), basePath)
   components[compName] = await generateComponent(
     fs
@@ -128,10 +128,10 @@ function generateComponent(template, script, properties, name) {
     var includes = [];
     var fin = 0;
     var pageInsert = ''
-    var props=''
-    var basicProps=''
-    var bP=['id','name','class']
-    bP.forEach((propName)=>{basicProps+=`if(!(props.${propName}&&${properties.hasOwnProperty(propName)})){container.${propName}=props.${propName}}`})
+    var props = ''
+    var basicProps = ''
+    var bP = ['id', 'name', 'class']
+    bP.forEach((propName) => { basicProps += `if(!(props.${propName}&&${properties.hasOwnProperty(propName)})){container.${propName}=props.${propName}}` })
     if (componentList[name].page) { pageInsert = 'document.getElementsByTagName("body")[0].appendChild(container);' }
     properties.forEach((prop, i) => {
       props += `var ${prop}=props.${prop};`;
@@ -148,16 +148,16 @@ function generateComponent(template, script, properties, name) {
     var tempDom = dom.window.document;
     var func;
     if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
-    
+
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
         await importComp(tag);
         var children = "";
-        
+
         var attrs = ''
-        if (node.hasAttributes()){
-          for(var attr of node.attributes)attrs+=`${attr.name}:'${attr.value}',`
-          attrs=','+attrs.slice(0,-1)
+        if (node.hasAttributes()) {
+          for (var attr of node.attributes) attrs += `${attr.name}:'${attr.value}',`
+          attrs = ',' + attrs.slice(0, -1)
         }
         //console.log(attrs)
         Array.from(node.childNodes).forEach((child) => {
@@ -172,9 +172,9 @@ function generateComponent(template, script, properties, name) {
         if (includes.length - 1 == i) {
 
           func = new Function(
-            
-            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
-          );
+
+            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;container.getElementsByTagName('comp').forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
+            );
 
           res(genNamedFunc(name, func));
         }
@@ -183,8 +183,8 @@ function generateComponent(template, script, properties, name) {
 
     if (includes.length == 0) {
       func = new Function(
-        
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script};component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
+
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;container.getElementsByTagName('comp').forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }

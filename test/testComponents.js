@@ -15,6 +15,13 @@ export function text() {
     var component;
     component = `<p>$[children]</p>`.replaceAll("$[children]", props.children);
     container.innerHTML += component;
+    container.getElementsByTagName("comp").forEach((elm) => {
+      elm.replaceWith(
+        new Function(
+          `return ${elm.className}(${elm.getAttribute("params")})`,
+        )(),
+      );
+    });
     return container;
   })(...arguments);
 }
@@ -44,6 +51,13 @@ export function hallo() {
         props.children,
       );
     container.innerHTML += component;
+    container.getElementsByTagName("comp").forEach((elm) => {
+      elm.replaceWith(
+        new Function(
+          `return ${elm.className}(${elm.getAttribute("params")})`,
+        )(),
+      );
+    });
     document.getElementsByTagName("body")[0].appendChild(container);
     return container;
   })(...arguments);
