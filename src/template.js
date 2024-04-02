@@ -147,6 +147,7 @@ function generateComponent(template, script, properties, name) {
     var dom = new jsdom.JSDOM(template);
     var tempDom = dom.window.document;
     var func;
+    var tags=''
     if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
 
     includes.forEach((tag, i) => {
@@ -168,12 +169,13 @@ function generateComponent(template, script, properties, name) {
           xmlString(node),
           `<comp class="${tag}" params="{children:'${children}'${attrs}}"></comp>`,
         );
+        tags+=tag+','
         //console.log(script)
         if (includes.length - 1 == i) {
 
           func = new Function(
 
-            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
+            `var props=arguments[0];var func={${tags.slice(0,-1)}};var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function('func',\`return func.\${elm.className}(\${elm.getAttribute('params')})\`)(funcs))});${pageInsert}return container`,
             );
 
           res(genNamedFunc(name, func));
@@ -184,7 +186,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
 
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }

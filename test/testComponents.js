@@ -15,19 +15,13 @@ export function text() {
     var component;
     component = `<p>$[children]</p>`.replaceAll("$[children]", props.children);
     container.innerHTML += component;
-    Array.from(container.getElementsByTagName("comp")).forEach((elm) => {
-      elm.replaceWith(
-        new Function(
-          `return ${elm.className}(${elm.getAttribute("params")})`,
-        )(),
-      );
-    });
     return container;
   })(...arguments);
 }
 export function hallo() {
   return (function anonymous() {
     var props = arguments[0];
+    var func = { text };
     var container = document.createElement("div");
     if (!(props.id && false)) {
       container.id = props.id;
@@ -54,8 +48,9 @@ export function hallo() {
     Array.from(container.getElementsByTagName("comp")).forEach((elm) => {
       elm.replaceWith(
         new Function(
-          `return ${elm.className}(${elm.getAttribute("params")})`,
-        )(),
+          "func",
+          `return func.${elm.className}(${elm.getAttribute("params")})`,
+        )(funcs),
       );
     });
     document.getElementsByTagName("body")[0].appendChild(container);
