@@ -173,7 +173,7 @@ function generateComponent(template, script, properties, name) {
 
           func = new Function(
 
-            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;container.getElementsByTagName('comp').forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
+            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
             );
 
           res(genNamedFunc(name, func));
@@ -184,7 +184,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
 
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;container.getElementsByTagName('comp').forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function(\`return \${elm.className}(\${elm.getAttribute('params')})\`)())});${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }
