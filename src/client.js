@@ -24,6 +24,7 @@ function ws(host, port, tls) {
         } else {
             tls = ''
         }
+        console.log(`ws${tls}://${host}:${port}`,tls)
         var ws = new WebSocket(`ws${tls}://${host}:${port}`)
         ws.addEventListener('error', e => reject(e))
         ws.onopen = () => {
@@ -55,10 +56,11 @@ async function response(id) {
     })
 }
 export class client {
-    constructor () {
-        url=new URL(window.location)
+    constructor (url) {
+        url=new URL(url)
         var tls=false
         if(url.protocol=="wss:")tls=true
+        console.log(tls)
         return new Promise(async (resolve, reject) => {
             try {
                 this.cinfo=await ws(url.hostname,url.port,url.protocol,tls)

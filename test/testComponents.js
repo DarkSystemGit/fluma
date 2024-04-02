@@ -33,19 +33,16 @@ export function hallo() {
     }
     var component;
     var name = props.name;
-    var cusExec = halloScript(
-      `${text({ children: `Hallo, ${name}` }).outerHTML}`,
-      props,
-      container,
-    );
+    var cusExec = halloScript(props, container);
     props = cusExec.props;
-    component = cusExec.template;
+    component = cusExec.template || component;
     container = cusExec.component;
     var name = props.name;
-    component = `${text({ children: `Hallo, ${name}` }).outerHTML}`.replaceAll(
-      "$[children]",
-      props.children,
-    );
+    component =
+      `<comp class="text" params="{children:'Hallo, ${name}'}"></comp>`.replaceAll(
+        "$[children]",
+        props.children,
+      );
     container.innerHTML += component;
     document.getElementsByTagName("body")[0].appendChild(container);
     return container;

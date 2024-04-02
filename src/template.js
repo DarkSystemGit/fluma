@@ -93,6 +93,11 @@ function xmlString() {
     .replaceAll("</body></html>", "")
     .replaceAll(' xmlns="http://www.w3.org/1999/xhtml"', "");
 }
+function hash(elm){
+  return btoa(elm.split('').reduce((hash, char) => {
+    return char.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
+}, 0).toString());
+}
 function genNamedFunc(name, func) {
   return new Function(
     `return function ${name}(){return (${func.toString()})(...arguments)}`,
@@ -142,7 +147,7 @@ function generateComponent(template, script, properties, name) {
     var dom = new jsdom.JSDOM(template);
     var tempDom = dom.window.document;
     var func;
-    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(\`__tempFill__\`,props,container);props=cusExec.props;component=cusExec.template;container=cusExec.component;`; } else { script = '' }
+    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
     
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
@@ -150,7 +155,7 @@ function generateComponent(template, script, properties, name) {
         var children = "";
         
         var attrs = ''
-        if (node.hasAttributes){
+        if (node.hasAttributes()){
           for(var attr of node.attributes)attrs+=`${attr.name}:'${attr.value}',`
           attrs=','+attrs.slice(0,-1)
         }
@@ -161,14 +166,14 @@ function generateComponent(template, script, properties, name) {
         //console.log(xmlString(node),components[tag](Object.values(node.attributes), children),template.replaceAll(xmlString(node),components[tag](Object.values(node.attributes), children)))
         template = template.replaceAll(
           xmlString(node),
-          `\${${tag}({children:\`${children}\`${attrs}}).outerHTML}`,
+          `<comp class="${tag}" params="{children:'${children}'${attrs}}"></comp>`,
         );
         //console.log(script)
         if (includes.length - 1 == i) {
 
           func = new Function(
             
-            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script.replace('__tempFill__',template)}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
+            `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
           );
 
           res(genNamedFunc(name, func));
@@ -179,7 +184,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
         
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script.replace('__tempFill__',template)};component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script};component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }
