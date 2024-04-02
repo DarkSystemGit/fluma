@@ -15,7 +15,7 @@ export function text() {
     var component;
     component = `<p>$[children]</p>`.replaceAll("$[children]", props.children);
     container.innerHTML += component;
-    container.getElementsByTagName("comp").forEach((elm) => {
+    Array.from(container.getElementsByTagName("comp")).forEach((elm) => {
       elm.replaceWith(
         new Function(
           `return ${elm.className}(${elm.getAttribute("params")})`,
@@ -51,7 +51,7 @@ export function hallo() {
         props.children,
       );
     container.innerHTML += component;
-    container.getElementsByTagName("comp").forEach((elm) => {
+    Array.from(container.getElementsByTagName("comp")).forEach((elm) => {
       elm.replaceWith(
         new Function(
           `return ${elm.className}(${elm.getAttribute("params")})`,
