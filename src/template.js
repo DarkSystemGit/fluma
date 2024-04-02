@@ -175,7 +175,7 @@ function generateComponent(template, script, properties, name) {
 
           func = new Function(
 
-            `var props=arguments[0];var func={${tags.slice(0,-1)}};var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function('func',\`return func.\${elm.className}(\${elm.getAttribute('params')})\`)(funcs))});${pageInsert}return container`,
+            `var props=arguments[0];var funcs={${tags.slice(0,-1)}};var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function('func',\`return func.\${elm.className}(\${elm.getAttribute('params')})\`)(funcs))});${pageInsert}return container`,
             );
 
           res(genNamedFunc(name, func));
