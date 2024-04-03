@@ -21,7 +21,7 @@ export function text() {
 export function hallo() {
   return (function anonymous() {
     var props = arguments[0];
-    var func = { text };
+    var funcs = { text };
     var container = document.createElement("div");
     if (!(props.id && false)) {
       container.id = props.id;
