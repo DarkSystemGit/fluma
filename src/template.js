@@ -66,7 +66,7 @@ Object.keys(componentList).forEach(async (compName) => {
           ) {
             var file = await prettier.format(
               uniq(imports).map((imp) => {
-                return `import ${imp.name}Script from '${imp.path}';`
+                return `import * as ${imp.name}Script from '${imp.path}';`
               }).join(";") + document.join(""), prettierOptions)
             fs.writeFileSync(
               path.join(basePath, `${config.name}.js`),
@@ -148,7 +148,7 @@ function generateComponent(template, script, properties, name) {
     var tempDom = dom.window.document;
     var func;
     var tags=''
-    if (script) { imports.push({ path: script, name }); script = `var cusExec=${name}Script(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
+    if (script) { imports.push({ path: script, name }); script = `var scrpt=new ${name}Script();var cusExec=scrpt.preload(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
 
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
