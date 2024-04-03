@@ -148,7 +148,8 @@ function generateComponent(template, script, properties, name) {
     var tempDom = dom.window.document;
     var func;
     var tags=''
-    if (script) { imports.push({ path: script, name }); script = `var scrpt=new ${name}Script();var cusExec=scrpt.preload(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`; } else { script = '' }
+    var script2=''
+    if (script) { imports.push({ path: script, name }); script = `var scrpt=new ${name}Script();var cusExec=scrpt.preload(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`;script2='scrpt.onLoad(container);' } else { script = '' }
 
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
@@ -175,7 +176,7 @@ function generateComponent(template, script, properties, name) {
 
           func = new Function(
 
-            `var props=arguments[0];var funcs={${tags.slice(0,-1)}};var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function('func',\`return func.\${elm.className}(\${elm.getAttribute('params')})\`)(funcs))});${pageInsert}return container`,
+            `var props=arguments[0];var funcs={${tags.slice(0,-1)}};var container=document.createElement('div');${basicProps}var component;${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;Array.from(container.getElementsByTagName('comp')).forEach((elm)=>{elm.replaceWith(new Function('func',\`return func.\${elm.className}(\${elm.getAttribute('params')})\`)(funcs))});${script2}${pageInsert}return container`,
             );
 
           res(genNamedFunc(name, func));
@@ -186,7 +187,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
 
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${props}${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;$${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${script2}${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }
