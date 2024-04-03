@@ -39,6 +39,7 @@ var config = JSON.parse(
   ),
 );
 var componentList = config.components;
+var stylesheets=[]
 var basePath = path.join(process.cwd(), path.dirname(process.argv[2]));
 function uniq(a) {
   var seen = {};
@@ -64,9 +65,10 @@ Object.keys(componentList).forEach(async (compName) => {
             document.length == Object.values(components).length &&
             end != true
           ) {
+            stylesheets=stylesheets.flat(Infinity)
             var file = await prettier.format(
               uniq(imports).map((imp) => {
-                return `import * as ${imp.name}Script from '${imp.path}';`
+                return `import ${imp.name}Script from '${imp.path}';`
               }).join(";") + document.join(""), prettierOptions)
             fs.writeFileSync(
               path.join(basePath, `${config.name}.js`),
@@ -131,6 +133,7 @@ function generateComponent(template, script, properties, name) {
     var props = ''
     var basicProps = ''
     var bP = ['id', 'name', 'class']
+    if(componentList[name].stylesheets&&componentList[name].page)stylesheets.push(componentList[name].stylesheets)
     bP.forEach((propName) => { basicProps += `if(!(props.${propName}&&${properties.hasOwnProperty(propName)})){container.${propName}=props.${propName}}` })
     if (componentList[name].page) { pageInsert = 'document.getElementsByTagName("body")[0].appendChild(container);' }
     properties.forEach((prop, i) => {
@@ -149,7 +152,7 @@ function generateComponent(template, script, properties, name) {
     var func;
     var tags=''
     var script2=''
-    if (script) { imports.push({ path: script, name }); script = `var scrpt=new ${name}Script();var cusExec=scrpt.preload(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`;script2='scrpt.onLoad(container);' } else { script = '' }
+    if (script) { imports.push({ path: script, name }); script = `var scrpt=new ${name}Script();var cusExec=scrpt.preload(props,container);props=cusExec.props;component=cusExec.template||component;container=cusExec.component;`;script2='scrpt.onload(container);' } else { script = '' }
 
     includes.forEach((tag, i) => {
       Array.from(tempDom.getElementsByTagName(tag)).forEach(async (node) => {
@@ -187,7 +190,7 @@ function generateComponent(template, script, properties, name) {
     if (includes.length == 0) {
       func = new Function(
 
-        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;$${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${script2}${pageInsert}return container`,
+        `var props=arguments[0];var container=document.createElement('div');${basicProps}var component;${script}${props}component=\`${template}\`.replaceAll('$[children]',props.children);container.innerHTML+=component;${script2}${pageInsert}return container`,
       );
       res(genNamedFunc(name, func));
     }

@@ -33,8 +33,8 @@ export function hallo() {
       container.class = props.class;
     }
     var component;
-    var name = props.name;
-    var cusExec = halloScript(props, container);
+    var scrpt = new halloScript();
+    var cusExec = scrpt.preload(props, container);
     props = cusExec.props;
     component = cusExec.template || component;
     container = cusExec.component;
@@ -53,6 +53,7 @@ export function hallo() {
         )(funcs),
       );
     });
+    scrpt.onload(container);
     document.getElementsByTagName("body")[0].appendChild(container);
     return container;
   })(...arguments);

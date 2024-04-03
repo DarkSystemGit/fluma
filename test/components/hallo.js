@@ -12,6 +12,6 @@ export default class Hallo {
         return { props, component }
     }
     onload(component){
-
+        console.log(component)
     }
 }
