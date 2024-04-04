@@ -3,13 +3,13 @@ export function text() {
   return (function anonymous() {
     var props = arguments[0];
     var container = document.createElement("div");
-    if (!(props.id && false)) {
+    if (!props.id && true) {
       container.id = props.id;
     }
-    if (!(props.name && false)) {
+    if (!props.name && true) {
       container.name = props.name;
     }
-    if (!(props.class && false)) {
+    if (!props.class && true) {
       container.class = props.class;
     }
     var component;
@@ -23,13 +23,13 @@ export function hallo() {
     var props = arguments[0];
     var funcs = { text };
     var container = document.createElement("div");
-    if (!(props.id && false)) {
+    if (!props.id && true) {
       container.id = props.id;
     }
-    if (!(props.name && false)) {
+    if (!props.name && true) {
       container.name = props.name;
     }
-    if (!(props.class && false)) {
+    if (!props.class && true) {
       container.class = props.class;
     }
     var component;
